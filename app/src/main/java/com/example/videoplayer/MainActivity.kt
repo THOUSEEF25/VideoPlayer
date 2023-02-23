@@ -2,7 +2,6 @@ package com.example.videoplayer
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.webkit.PermissionRequest
 import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -12,14 +11,15 @@ import com.karumi.dexter.listener.PermissionDeniedResponse
 import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.single.PermissionListener
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
     private lateinit var fileList: List<File>
     private lateinit var customAdapter: CustomAdapter
 
-    val path = File(System.getenv("EXTERNAL_STORAGE"))
+    private val path = System.getenv("EXTERNAL_STORAGE")?.let { File(it) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,20 +63,29 @@ class MainActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = GridLayoutManager(this, 2)
+
         fileList = ArrayList()
-        fileList.addAll(findVideos(path))
+        path?.let { findVideos(it) }?.let { (fileList as ArrayList<File>).addAll(it) }
+
+        customAdapter = CustomAdapter(this, fileList)
+        customAdapter.setHasStableIds(true)
+
+        recyclerView.adapter = customAdapter
     }
 
     private fun findVideos(file: File): ArrayList<File> {
         val myVideos = ArrayList<File>()
         val allFiles = file.listFiles()
 
-        for (singleFile: File in allFiles) {
+        for (singleFile: File in allFiles!!) {
             if (singleFile.isDirectory && !singleFile.isHidden) {
-                myVideos.addAll(findVideos(singleFile));
+                myVideos.addAll(findVideos(singleFile))
             }
-            else
+            else if (singleFile.name.lowercase(Locale.ROOT).endsWith(".mp4")) {
+
+                myVideos.add(singleFile)
+            }
         }
-        return
+        return myVideos
     }
 }
