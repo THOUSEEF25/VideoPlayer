@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.media.ThumbnailUtils
 import android.provider.MediaStore
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
@@ -14,10 +15,12 @@ class CustomAdapter : RecyclerView.Adapter<VideoViewHolder> {
 
     private var context: Context
     private var files : List<File>
+    private lateinit var listener: SelectListener
 
     constructor(context: Context, files: List<File>) : super() {
         this.context = context
         this.files = files
+        this.listener = listener
     }
 
 
@@ -38,5 +41,13 @@ class CustomAdapter : RecyclerView.Adapter<VideoViewHolder> {
         MediaStore.Images.Thumbnails.MINI_KIND)
 
         holder.imgThumbnail.setImageBitmap(thump)
+
+        holder.cardView.setOnClickListener {
+
+            fun onClick(view : View) {
+                listener.onFileClicked(files[position])
+            }
+
+        }
     }
 }

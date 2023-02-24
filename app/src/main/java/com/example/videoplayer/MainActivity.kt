@@ -14,12 +14,12 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() , SelectListener {
 
     private lateinit var fileList: List<File>
     private lateinit var customAdapter: CustomAdapter
 
-    private val path = System.getenv("EXTERNAL_STORAGE")?.let { File(it) }
+    private val path = File(System.getenv("EXTERNAL_STORAGE"))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,21 +38,21 @@ class MainActivity : AppCompatActivity() {
             override fun onPermissionDenied(response: PermissionDeniedResponse?) {
                 Toast.makeText(
                     this@MainActivity,
-                    "Storage Permission is Required!!",
+                    "Storage Permission is Required",
                     Toast.LENGTH_SHORT
                 ).show()
             }
 
             override fun onPermissionRationaleShouldBeShown(
-                p0: com.karumi.dexter.listener.PermissionRequest?,
-                token: PermissionToken?
+                p0: com.karumi.dexter.listener.PermissionRequest,
+                token: PermissionToken
             ) {
 
-                token?.continuePermissionRequest()
+                token.continuePermissionRequest()
             }
         }
         Dexter.withContext(this)
-            .withPermission(Manifest.permission.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)
+            .withPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)
             .withListener(permissionListener)
             .check()
 
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = GridLayoutManager(this, 2)
 
         fileList = ArrayList()
-        path?.let { findVideos(it) }?.let { (fileList as ArrayList<File>).addAll(it) }
+        findVideos(path).let { (fileList as ArrayList<File>).addAll(it) }
 
         customAdapter = CustomAdapter(this, fileList)
         customAdapter.setHasStableIds(true)
@@ -87,5 +87,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return myVideos
+    }
+
+    override fun onFileClicked(file: File) {
+        TODO("Not yet implemented")
     }
 }
